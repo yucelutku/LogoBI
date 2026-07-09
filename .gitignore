@@ -1,0 +1,69 @@
+## .NET / Visual Studio
+
+# Build çıktıları
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+build/
+bld/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio geçici / kullanıcı dosyaları
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.rsuser
+*.sln.docstates
+
+# Blazor WASM / publish
+publish/
+[Pp]ublish[Pp]rofiles/
+*.publishsettings
+wwwroot/dist/
+wwwroot/_content/
+
+# Rider / VS Code (kullanırsan)
+.idea/
+.vscode/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Test sonuçları
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.coverage
+*.coveragexml
+
+# Uygulama sırları / yerel config — ÖNEMLİ (bağlantı stringleri buraya sızmasın)
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+secrets.json
+*.pfx
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Loglar / geçici
+*.log
+*.tmp

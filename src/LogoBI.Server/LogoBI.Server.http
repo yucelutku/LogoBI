@@ -1,0 +1,6 @@
+@LogoBI.Server_HostAddress = http://localhost:5154
+
+GET {{LogoBI.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
