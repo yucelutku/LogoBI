@@ -17,7 +17,8 @@ BEGIN
         Scope           NVARCHAR(20)   NOT NULL CONSTRAINT CK_LogicalSource_Scope CHECK (Scope IN ('firm', 'period')),
         Grain           NVARCHAR(50)   NOT NULL,
         DefaultFilters  NVARCHAR(1000) NULL,
-        IsHidden        BIT            NOT NULL CONSTRAINT DF_LogicalSource_IsHidden DEFAULT 0
+        IsHidden        BIT            NOT NULL CONSTRAINT DF_LogicalSource_IsHidden DEFAULT 0,
+        Alias           NVARCHAR(10)   NOT NULL
     );
 END
 GO
@@ -63,14 +64,14 @@ SET IDENTITY_INSERT dbo.LogicalSource ON;
 
 IF NOT EXISTS (SELECT 1 FROM dbo.LogicalSource WHERE Id = 1)
 BEGIN
-    INSERT INTO dbo.LogicalSource (Id, DisplayName, PhysicalPattern, Scope, Grain, DefaultFilters, IsHidden)
-    VALUES (1, N'Faturalar', N'LG_{FIRMA}_{DONEM}_INVOICE', N'period', N'invoice_header', N'CANCELLED = 0', 0); -- TODO: DB'de doğrula
+    INSERT INTO dbo.LogicalSource (Id, DisplayName, PhysicalPattern, Scope, Grain, DefaultFilters, IsHidden, Alias)
+    VALUES (1, N'Faturalar', N'LG_{FIRMA}_{DONEM}_INVOICE', N'period', N'invoice_header', N'{a}.CANCELLED = 0', 0, N'INV'); -- TODO: DB'de doğrula
 END
 
 IF NOT EXISTS (SELECT 1 FROM dbo.LogicalSource WHERE Id = 2)
 BEGIN
-    INSERT INTO dbo.LogicalSource (Id, DisplayName, PhysicalPattern, Scope, Grain, DefaultFilters, IsHidden)
-    VALUES (2, N'Cari', N'LG_{FIRMA}_CLCARD', N'firm', N'card', NULL, 0); -- TODO: DB'de doğrula
+    INSERT INTO dbo.LogicalSource (Id, DisplayName, PhysicalPattern, Scope, Grain, DefaultFilters, IsHidden, Alias)
+    VALUES (2, N'Cari', N'LG_{FIRMA}_CLCARD', N'firm', N'card', NULL, 0, N'CLC'); -- TODO: DB'de doğrula
 END
 
 SET IDENTITY_INSERT dbo.LogicalSource OFF;

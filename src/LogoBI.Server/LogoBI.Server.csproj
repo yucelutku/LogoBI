@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LogoBI.Engine\LogoBI.Engine.csproj" />
     <ProjectReference Include="..\LogoBI.Shared\LogoBI.Shared.csproj" />
     <ProjectReference Include="..\LogoBI.Client\LogoBI.Client.csproj" />
   </ItemGroup>

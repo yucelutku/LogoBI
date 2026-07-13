@@ -93,3 +93,16 @@ Alternatif: Tek CLAUDE.md/tek .cursorrules — araçlar arası taşınmaz, Gemin
 **Karar:** Metadata + kayıtlı raporlar için app DB olarak SQL Server kullanılır (Logo DB'sinden ayrı veritabanı, ayrı bağlantı dizesi). 
 **Gerekçe:** Müşteride SQL Server zaten var → ek altyapı/lisans yok, prod-paritesi tam, Dapper+Microsoft.Data.SqlClient yığınıyla tek sürücü. 
 Alternatif: SQLite/PostgreSQL — dev'de sade ama prod-paritesi ve tek-sürücü avantajını kaybediyor; reddedildi.
+
+###ADR-013 (güncelleme) — Token dolgusu domain-teyitli. 
+Firma D3 (001–999), dönem D2 (01–99); genişlikler const, doğrulanmış int'ten üretilir, parametre değil.
+
+
+###ADR-014 — Alias standardı metadata'da veri. 
+Her LogicalSource kısa, benzersiz, insan-okur bir Alias taşır (INV,CLC); 
+compiler SQL'i bu alias'larla üretir (pozisyonel değil). 
+Gerekçe: üretilen SQL'in Logo ile göz-doğrulaması + metadata=veri. Self-join (v1'de yok) için _2 son eki sonraya. Alternatif: pozisyonel t0/t1 — okunabilirlik/doğrulama zayıf, reddedildi.
+
+
+###ADR-015 — Firma/dönem kaynağı: L_CAPIFIRM/L_CAPIPERIOD, salt-okunur, motordan bağımsız. 
+Motor sadece TokenContext(int,int) alır. Numaralar Faz 0'da config'ten; Faz 1'de IFirmPeriodCatalog bu sistem tablolarından dinamik okur + UI seçici. Bu tablolar LogicalSource değil (sistem tablosu, tokensız). Gerekçe: dinamik + salt-okunur, kapsam disiplini korunur.

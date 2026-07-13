@@ -11,7 +11,7 @@ public class SqlServerMetadataRepository : IMetadataRepository
     private const string TableRelationship = "Relationship";
 
     private const string SelectSourcesSql =
-        $"SELECT Id, DisplayName, PhysicalPattern, Scope, Grain, DefaultFilters, IsHidden FROM {TableLogicalSource}";
+        $"SELECT Id, DisplayName, PhysicalPattern, Scope, Grain, DefaultFilters, IsHidden, Alias FROM {TableLogicalSource}";
 
     private const string SelectFieldsSql =
         $"SELECT Id, SourceId, PhysicalColumn, DisplayName, DataType, Format, Role, DefaultAgg, IsHidden FROM {TableField}";

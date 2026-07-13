@@ -9,4 +9,5 @@ public record LogicalSource
     public string Grain { get; init; } = string.Empty;
     public string? DefaultFilters { get; init; }
     public bool IsHidden { get; init; }
+    public string Alias { get; init; } = string.Empty;
 }
