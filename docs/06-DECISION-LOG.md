@@ -87,3 +87,9 @@ imperatif tutulur, zorunlu build+tarayıcı self-check eklenir.
 Gerekçe: Her araç kendi giriş dosyasını okur; tek kaynak kopya/çelişkiyi önler. Gemini uzun
 dokümanı takip etmediği için ayrı sertleştirme katmanı + Definition of Done gerekir.
 Alternatif: Tek CLAUDE.md/tek .cursorrules — araçlar arası taşınmaz, Gemini drift'ini çözmez; reddedildi.
+
+###ADR-012 — App DB motoru: Microsoft SQL Server. 
+**Durum:** kabul.
+**Karar:** Metadata + kayıtlı raporlar için app DB olarak SQL Server kullanılır (Logo DB'sinden ayrı veritabanı, ayrı bağlantı dizesi). 
+**Gerekçe:** Müşteride SQL Server zaten var → ek altyapı/lisans yok, prod-paritesi tam, Dapper+Microsoft.Data.SqlClient yığınıyla tek sürücü. 
+Alternatif: SQLite/PostgreSQL — dev'de sade ama prod-paritesi ve tek-sürücü avantajını kaybediyor; reddedildi.
