@@ -1,4 +1,5 @@
 using LogoBI.Engine.Compile;
+using LogoBI.Engine.Guard;
 using LogoBI.Engine.Join;
 using LogoBI.Engine.Tokens;
 using LogoBI.Shared.Metadata;
@@ -67,7 +68,26 @@ public class SqlCompilerTests
             SourceId = 3,
             PhysicalColumn = "AMOUNT",
             DisplayName = "Miktar",
-            Role = "measure"
+            Role = "measure",
+            DefaultAgg = "sum"
+        },
+        new Field
+        {
+            Id = 104,
+            SourceId = 1,
+            PhysicalColumn = "NETTOTAL",
+            DisplayName = "Net Tutar",
+            Role = "measure",
+            DefaultAgg = "sum"
+        },
+        new Field
+        {
+            Id = 105,
+            SourceId = 3,
+            PhysicalColumn = "INVOICEREF",
+            DisplayName = "INVOICEREF",
+            Role = "dimension",
+            IsHidden = true
         }
     };
 
@@ -123,6 +143,95 @@ WHERE INV.CANCELLED = 0";
     }
 
     [Fact]
+    public void Compile_TestA_MeasureAndDimensionSingleGrain_GeneratesGroupBy()
+    {
+        var report = new ReportDefinition
+        {
+            AnchorSourceId = 1,
+            FieldIds = new[] { 101, 104 }
+        };
+        var ctx = new TokenContext { Firm = 9, Period = 1 };
+
+        var result = SqlCompiler.Compile(report, ctx, _sources, _fields, _relationships);
+
+        var expectedSql = @"SELECT INV.NUMBER, SUM(INV.NETTOTAL)
+FROM LG_009_01_INVOICE INV
+WHERE INV.CANCELLED = 0
+GROUP BY INV.NUMBER";
+
+        Assert.Equal(NormalizeWhitespace(expectedSql), NormalizeWhitespace(result.Sql));
+        Assert.Empty(result.Parameters);
+    }
+
+    [Fact]
+    public void Compile_TestB_OnlyMeasure_GeneratesNoGroupBy()
+    {
+        var report = new ReportDefinition
+        {
+            AnchorSourceId = 1,
+            FieldIds = new[] { 104 }
+        };
+        var ctx = new TokenContext { Firm = 9, Period = 1 };
+
+        var result = SqlCompiler.Compile(report, ctx, _sources, _fields, _relationships);
+
+        var expectedSql = @"SELECT SUM(INV.NETTOTAL)
+FROM LG_009_01_INVOICE INV
+WHERE INV.CANCELLED = 0";
+
+        Assert.Equal(NormalizeWhitespace(expectedSql), NormalizeWhitespace(result.Sql));
+        Assert.Empty(result.Parameters);
+        Assert.DoesNotContain("GROUP BY", result.Sql, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Compile_TestC_DifferentGrainMeasures_ThrowsGrainMixException()
+    {
+        var report = new ReportDefinition
+        {
+            AnchorSourceId = 1,
+            FieldIds = new[] { 104, 103 }
+        };
+        var ctx = new TokenContext { Firm = 9, Period = 1 };
+
+        var ex = Assert.Throws<GrainMixException>(() =>
+            SqlCompiler.Compile(report, ctx, _sources, _fields, _relationships));
+
+        Assert.Contains("invoice_header", ex.Message);
+        Assert.Contains("invoice_line", ex.Message);
+    }
+
+    [Fact]
+    public void Compile_TestD_DifferentGrainDimensions_DoesNotThrowGrainMixException()
+    {
+        var report = new ReportDefinition
+        {
+            AnchorSourceId = 1,
+            FieldIds = new[] { 101, 105 }
+        };
+        var ctx = new TokenContext { Firm = 9, Period = 1 };
+
+        var relationshipsWithLineJoin = _relationships.Concat(new[]
+        {
+            new Relationship
+            {
+                Id = 2,
+                FromSourceId = 3,
+                ToSourceId = 1,
+                FromColumn = "INVOICEREF",
+                ToColumn = "LOGICALREF",
+                Cardinality = "one_to_many",
+                JoinType = "left"
+            }
+        }).ToList();
+
+        var result = SqlCompiler.Compile(report, ctx, _sources, _fields, relationshipsWithLineJoin);
+
+        Assert.Contains("INV.NUMBER", result.Sql);
+        Assert.Contains("STL.INVOICEREF", result.Sql);
+    }
+
+    [Fact]
     public async Task CompileAsync_WithFakeRepository_WorksForHappyPath()
     {
         var repo = new FakeMetadataRepository(_sources, _fields, _relationships);
@@ -142,6 +251,33 @@ WHERE INV.CANCELLED = 0";
 
         Assert.Equal(NormalizeWhitespace(expectedSql), NormalizeWhitespace(result.Sql));
         Assert.Empty(result.Parameters);
+    }
+
+    [Fact]
+    public void Compile_WithTopN_GeneratesSelectTopSql()
+    {
+        var report = new ReportDefinition
+        {
+            AnchorSourceId = 1,
+            FieldIds = new[] { 101, 102 }
+        };
+        var ctx = new TokenContext { Firm = 9, Period = 1 };
+
+        var resultWithTop = SqlCompiler.Compile(report, ctx, _sources, _fields, _relationships, topN: 100);
+        var resultNullTop = SqlCompiler.Compile(report, ctx, _sources, _fields, _relationships, topN: null);
+
+        var expectedTopSql = @"SELECT TOP 100 INV.NUMBER, CLC.CODE
+FROM LG_009_01_INVOICE INV
+LEFT JOIN LG_009_CLCARD CLC ON CLC.LOGICALREF = INV.CLIENTREF
+WHERE INV.CANCELLED = 0";
+
+        var expectedNullTopSql = @"SELECT INV.NUMBER, CLC.CODE
+FROM LG_009_01_INVOICE INV
+LEFT JOIN LG_009_CLCARD CLC ON CLC.LOGICALREF = INV.CLIENTREF
+WHERE INV.CANCELLED = 0";
+
+        Assert.Equal(NormalizeWhitespace(expectedTopSql), NormalizeWhitespace(resultWithTop.Sql));
+        Assert.Equal(NormalizeWhitespace(expectedNullTopSql), NormalizeWhitespace(resultNullTop.Sql));
     }
 
     private static string NormalizeWhitespace(string input)

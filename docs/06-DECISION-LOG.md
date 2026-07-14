@@ -101,8 +101,17 @@ Firma D3 (001–999), dönem D2 (01–99); genişlikler const, doğrulanmış in
 ###ADR-014 — Alias standardı metadata'da veri. 
 Her LogicalSource kısa, benzersiz, insan-okur bir Alias taşır (INV,CLC); 
 compiler SQL'i bu alias'larla üretir (pozisyonel değil). 
-Gerekçe: üretilen SQL'in Logo ile göz-doğrulaması + metadata=veri. Self-join (v1'de yok) için _2 son eki sonraya. Alternatif: pozisyonel t0/t1 — okunabilirlik/doğrulama zayıf, reddedildi.
+Gerekçe: üretilen SQL'in Logo ile göz-doğrulaması + metadata=veri. Self-join (v1'de yok) için _2 son eki sonraya. 
+Alternatif: pozisyonel t0/t1 — okunabilirlik/doğrulama zayıf, reddedildi.
 
 
 ###ADR-015 — Firma/dönem kaynağı: L_CAPIFIRM/L_CAPIPERIOD, salt-okunur, motordan bağımsız. 
 Motor sadece TokenContext(int,int) alır. Numaralar Faz 0'da config'ten; Faz 1'de IFirmPeriodCatalog bu sistem tablolarından dinamik okur + UI seçici. Bu tablolar LogicalSource değil (sistem tablosu, tokensız). Gerekçe: dinamik + salt-okunur, kapsam disiplini korunur.
+
+###ADR-016 — GROUP BY otomatiği. 
+measure + dimension birlikteyse: tüm SELECT dimension'ları GROUP BY'a girer, measure'lar default_agg ile sarılır. Yalnız measure → GROUP BY yok. Yalnız dimension → mevcut davranış.
+ Gerekçe: standart BI toplama; kullanıcı manuel GROUP BY yazmaz.
+ 
+###ADR-017 — Grain Guard yalnız measure grain'lerini denetler. 
+Fan-trap yalnız çarpılan measure'larda oluşur; dimension'lar farklı grain'den serbest seçilir. 2+ farklı grain'den measure → engellle + uyar (çözme). 
+Gerekçe: dimension'ı da engellemek kullanıcıyı gereksiz kısıtlar; hata measure çarpımında.
