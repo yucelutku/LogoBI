@@ -42,7 +42,7 @@ public class GrainGuardTests
 
     private readonly IReadOnlyList<Field> _fields = new[]
     {
-        new Field { Id = 101, SourceId = 1, PhysicalColumn = "NUMBER", DisplayName = "Fatura No", Role = "dimension" },
+        new Field { Id = 101, SourceId = 1, PhysicalColumn = "FICHENO", DisplayName = "Fatura No", Role = "dimension" },
         new Field { Id = 102, SourceId = 2, PhysicalColumn = "CODE", DisplayName = "Cari Kodu", Role = "dimension" },
         new Field { Id = 103, SourceId = 3, PhysicalColumn = "AMOUNT", DisplayName = "Miktar", Role = "measure", DefaultAgg = "sum" },
         new Field { Id = 104, SourceId = 1, PhysicalColumn = "NETTOTAL", DisplayName = "Net Tutar", Role = "measure", DefaultAgg = "sum" },
@@ -52,14 +52,14 @@ public class GrainGuardTests
     [Fact]
     public void Validate_OnlyDimensions_DoesNotThrow()
     {
-        var selected = new[] { _fields[0], _fields[1], _fields[4] }; // NUMBER, CODE, INVOICEREF
+        var selected = new[] { _fields[0], _fields[1], _fields[4] }; // FICHENO, CODE, INVOICEREF
         GrainGuard.Validate(selected, _sources);
     }
 
     [Fact]
     public void Validate_SingleMeasureAndDimensions_DoesNotThrow()
     {
-        var selected = new[] { _fields[0], _fields[1], _fields[3] }; // NUMBER, CODE, NETTOTAL (header measure)
+        var selected = new[] { _fields[0], _fields[1], _fields[3] }; // FICHENO, CODE, NETTOTAL (header measure)
         GrainGuard.Validate(selected, _sources);
     }
 
@@ -75,7 +75,7 @@ public class GrainGuardTests
     [Fact]
     public void Validate_DifferentGrainDimensions_DoesNotThrow()
     {
-        var selected = new[] { _fields[0], _fields[4] }; // NUMBER (header dim), INVOICEREF (line dim)
+        var selected = new[] { _fields[0], _fields[4] }; // FICHENO (header dim), INVOICEREF (line dim)
         GrainGuard.Validate(selected, _sources);
     }
 }

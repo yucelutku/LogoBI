@@ -9,7 +9,7 @@ SET IDENTITY_INSERT dbo.LogicalSource ON;
 IF NOT EXISTS (SELECT 1 FROM dbo.LogicalSource WHERE Id = 3)
 BEGIN
     INSERT INTO dbo.LogicalSource (Id, DisplayName, PhysicalPattern, Scope, Grain, DefaultFilters, IsHidden, Alias)
-    VALUES (3, N'Stok Hareketleri', N'LG_{FIRMA}_{DONEM}_STLINE', N'period', N'invoice_line', N'{a}.CANCELLED = 0', 0, N'STL'); -- TODO: DB'de doğrula (STLINE tablo adı, CANCELLED kolonu var mı)
+    VALUES (3, N'Stok Hareketleri', N'LG_{FIRMA}_{DONEM}_STLINE', N'period', N'invoice_line', N'{a}.CANCELLED = 0', 0, N'STL');
 END
 ELSE
 BEGIN
@@ -31,7 +31,7 @@ GO
 IF NOT EXISTS (SELECT 1 FROM dbo.Field WHERE SourceId = 3 AND PhysicalColumn = N'AMOUNT')
 BEGIN
     INSERT INTO dbo.Field (SourceId, PhysicalColumn, DisplayName, DataType, Format, Role, DefaultAgg, IsHidden)
-    VALUES (3, N'AMOUNT', N'Miktar', N'decimal', N'#,##0.00', N'measure', N'sum', 0); -- TODO: DB'de doğrula
+    VALUES (3, N'AMOUNT', N'Miktar', N'decimal', N'#,##0.00', N'measure', N'sum', 0);
 END
 ELSE
 BEGIN
@@ -48,7 +48,7 @@ END
 IF NOT EXISTS (SELECT 1 FROM dbo.Field WHERE SourceId = 3 AND PhysicalColumn = N'INVOICEREF')
 BEGIN
     INSERT INTO dbo.Field (SourceId, PhysicalColumn, DisplayName, DataType, Format, Role, DefaultAgg, IsHidden)
-    VALUES (3, N'INVOICEREF', N'INVOICEREF', N'int', NULL, N'dimension', NULL, 1); -- TODO: DB'de doğrula -- join için, gizli
+    VALUES (3, N'INVOICEREF', N'INVOICEREF', N'int', NULL, N'dimension', NULL, 1); -- join için, gizli
 END
 ELSE
 BEGIN
@@ -70,7 +70,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO dbo.Relationship (FromSourceId, ToSourceId, FromColumn, ToColumn, Cardinality, JoinType)
-    VALUES (3, 1, N'INVOICEREF', N'LOGICALREF', N'one_to_many', N'left'); -- TODO: DB'de doğrula (STLINE.INVOICEREF)
+    VALUES (3, 1, N'INVOICEREF', N'LOGICALREF', N'one_to_many', N'left');
 END
 ELSE
 BEGIN

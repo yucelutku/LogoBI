@@ -50,7 +50,7 @@ public class SqlCompilerTests
         {
             Id = 101,
             SourceId = 1,
-            PhysicalColumn = "NUMBER",
+            PhysicalColumn = "FICHENO",
             DisplayName = "Fatura No",
             Role = "dimension"
         },
@@ -117,7 +117,7 @@ public class SqlCompilerTests
 
         var result = SqlCompiler.Compile(report, ctx, _sources, _fields, _relationships);
 
-        var expectedSql = @"SELECT INV.NUMBER, CLC.CODE
+        var expectedSql = @"SELECT INV.FICHENO, CLC.CODE
 FROM LG_009_01_INVOICE INV
 LEFT JOIN LG_009_CLCARD CLC ON CLC.LOGICALREF = INV.CLIENTREF
 WHERE INV.CANCELLED = 0";
@@ -154,10 +154,10 @@ WHERE INV.CANCELLED = 0";
 
         var result = SqlCompiler.Compile(report, ctx, _sources, _fields, _relationships);
 
-        var expectedSql = @"SELECT INV.NUMBER, SUM(INV.NETTOTAL)
+        var expectedSql = @"SELECT INV.FICHENO, SUM(INV.NETTOTAL)
 FROM LG_009_01_INVOICE INV
 WHERE INV.CANCELLED = 0
-GROUP BY INV.NUMBER";
+GROUP BY INV.FICHENO";
 
         Assert.Equal(NormalizeWhitespace(expectedSql), NormalizeWhitespace(result.Sql));
         Assert.Empty(result.Parameters);
@@ -227,7 +227,7 @@ WHERE INV.CANCELLED = 0";
 
         var result = SqlCompiler.Compile(report, ctx, _sources, _fields, relationshipsWithLineJoin);
 
-        Assert.Contains("INV.NUMBER", result.Sql);
+        Assert.Contains("INV.FICHENO", result.Sql);
         Assert.Contains("STL.INVOICEREF", result.Sql);
     }
 
@@ -244,7 +244,7 @@ WHERE INV.CANCELLED = 0";
 
         var result = await SqlCompiler.CompileAsync(report, ctx, repo);
 
-        var expectedSql = @"SELECT INV.NUMBER, CLC.CODE
+        var expectedSql = @"SELECT INV.FICHENO, CLC.CODE
 FROM LG_009_01_INVOICE INV
 LEFT JOIN LG_009_CLCARD CLC ON CLC.LOGICALREF = INV.CLIENTREF
 WHERE INV.CANCELLED = 0";
@@ -266,12 +266,12 @@ WHERE INV.CANCELLED = 0";
         var resultWithTop = SqlCompiler.Compile(report, ctx, _sources, _fields, _relationships, topN: 100);
         var resultNullTop = SqlCompiler.Compile(report, ctx, _sources, _fields, _relationships, topN: null);
 
-        var expectedTopSql = @"SELECT TOP 100 INV.NUMBER, CLC.CODE
+        var expectedTopSql = @"SELECT TOP 100 INV.FICHENO, CLC.CODE
 FROM LG_009_01_INVOICE INV
 LEFT JOIN LG_009_CLCARD CLC ON CLC.LOGICALREF = INV.CLIENTREF
 WHERE INV.CANCELLED = 0";
 
-        var expectedNullTopSql = @"SELECT INV.NUMBER, CLC.CODE
+        var expectedNullTopSql = @"SELECT INV.FICHENO, CLC.CODE
 FROM LG_009_01_INVOICE INV
 LEFT JOIN LG_009_CLCARD CLC ON CLC.LOGICALREF = INV.CLIENTREF
 WHERE INV.CANCELLED = 0";

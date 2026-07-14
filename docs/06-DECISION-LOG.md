@@ -88,30 +88,42 @@ Gerekçe: Her araç kendi giriş dosyasını okur; tek kaynak kopya/çelişkiyi 
 dokümanı takip etmediği için ayrı sertleştirme katmanı + Definition of Done gerekir.
 Alternatif: Tek CLAUDE.md/tek .cursorrules — araçlar arası taşınmaz, Gemini drift'ini çözmez; reddedildi.
 
-###ADR-012 — App DB motoru: Microsoft SQL Server. 
-**Durum:** kabul.
-**Karar:** Metadata + kayıtlı raporlar için app DB olarak SQL Server kullanılır (Logo DB'sinden ayrı veritabanı, ayrı bağlantı dizesi). 
-**Gerekçe:** Müşteride SQL Server zaten var → ek altyapı/lisans yok, prod-paritesi tam, Dapper+Microsoft.Data.SqlClient yığınıyla tek sürücü. 
-Alternatif: SQLite/PostgreSQL — dev'de sade ama prod-paritesi ve tek-sürücü avantajını kaybediyor; reddedildi.
+### ADR-012 — App DB motoru: Microsoft SQL Server
+**Durum:** kabul
+**Karar:** Metadata + kayıtlı raporlar için app DB = SQL Server (Logo DB'sinden ayrı veritabanı,
+ayrı bağlantı dizesi). Dev'de LocalDB (LogoBI_AppDb).
+**Gerekçe:** müşteride SQL Server zaten var → ek altyapı/lisans yok, prod-paritesi tam, tek sürücü.
 
-###ADR-013 (güncelleme) — Token dolgusu domain-teyitli. 
-Firma D3 (001–999), dönem D2 (01–99); genişlikler const, doğrulanmış int'ten üretilir, parametre değil.
+### ADR-013 — Firma/dönem token'ları güvenli identifier, parametre değil
+**Durum:** kabul
+**Karar:** {FIRMA}/{DONEM} resolver'da doğrulanmış tam sayılardan (firma D3: 001-999, dönem D2:
+01-99) üretilip fiziksel tablo adına basılır; kullanıcı değerleri her zaman SqlParameter.
+**Gerekçe:** identifier'lar SQL'de parametrelenemez; güvenliği "yalnız doğrulanmış int" + salt-okunur
+login sağlar.
+
+### ADR-014 — Alias standardı metadata'da veri
+**Durum:** kabul
+**Karar:** Her LogicalSource kısa, benzersiz, insan-okur bir Alias taşır (INV, CLC, STL); compiler
+SQL'i bu alias'larla üretir (pozisyonel t0/t1 değil). Self-join (v1'de yok) için _2 son eki sonraya.
+**Gerekçe:** üretilen SQL'in Logo ile göz-doğrulaması + metadata=veri.
 
 
-###ADR-014 — Alias standardı metadata'da veri. 
-Her LogicalSource kısa, benzersiz, insan-okur bir Alias taşır (INV,CLC); 
-compiler SQL'i bu alias'larla üretir (pozisyonel değil). 
-Gerekçe: üretilen SQL'in Logo ile göz-doğrulaması + metadata=veri. Self-join (v1'de yok) için _2 son eki sonraya. 
-Alternatif: pozisyonel t0/t1 — okunabilirlik/doğrulama zayıf, reddedildi.
+### ADR-015 — Firma/dönem kaynağı: L_CAPIFIRM/L_CAPIPERIOD, salt-okunur, motordan bağımsız
+**Durum:** kabul
+**Karar:** Motor sadece TokenContext(Firm,Period int) alır. Numaralar Faz 0'da config'ten; Faz 1'de
+IFirmPeriodCatalog bu sistem tablolarından dinamik okur + UI seçici. Bu tablolar LogicalSource değil
+(sistem tablosu, LG_ tokensız).
+**Gerekçe:** dinamik + salt-okunur, kapsam disiplini korunur.
 
+### ADR-016 — GROUP BY otomatiği
+**Durum:** kabul
+**Karar:** measure+dimension birlikteyse tüm SELECT dimension'ları GROUP BY'a girer, measure'lar
+default_agg ile sarılır. Yalnız measure → GROUP BY yok. Yalnız dimension → düz liste.
+**Gerekçe:** standart BI toplama; kullanıcı manuel GROUP BY yazmaz.
 
-###ADR-015 — Firma/dönem kaynağı: L_CAPIFIRM/L_CAPIPERIOD, salt-okunur, motordan bağımsız. 
-Motor sadece TokenContext(int,int) alır. Numaralar Faz 0'da config'ten; Faz 1'de IFirmPeriodCatalog bu sistem tablolarından dinamik okur + UI seçici. Bu tablolar LogicalSource değil (sistem tablosu, tokensız). Gerekçe: dinamik + salt-okunur, kapsam disiplini korunur.
-
-###ADR-016 — GROUP BY otomatiği. 
-measure + dimension birlikteyse: tüm SELECT dimension'ları GROUP BY'a girer, measure'lar default_agg ile sarılır. Yalnız measure → GROUP BY yok. Yalnız dimension → mevcut davranış.
- Gerekçe: standart BI toplama; kullanıcı manuel GROUP BY yazmaz.
  
-###ADR-017 — Grain Guard yalnız measure grain'lerini denetler. 
-Fan-trap yalnız çarpılan measure'larda oluşur; dimension'lar farklı grain'den serbest seçilir. 2+ farklı grain'den measure → engellle + uyar (çözme). 
-Gerekçe: dimension'ı da engellemek kullanıcıyı gereksiz kısıtlar; hata measure çarpımında.
+### ADR-017 — Grain Guard yalnız measure grain'lerini denetler
+**Durum:** kabul
+**Karar:** Fan-trap yalnız çarpılan measure'larda oluşur; dimension'lar farklı grain'den serbest
+seçilir. 2+ farklı grain'den measure → engelle + uyar (v1'de çözme).
+**Gerekçe:** dimension'ı da engellemek kullanıcıyı gereksiz kısıtlar; hata measure çarpımında.
