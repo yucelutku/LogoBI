@@ -1,0 +1,115 @@
+@using System.Text.Json
+@using System.Globalization
+@using LogoBI.Client.Models
+
+@if (QueryResult == null || QueryResult.Rows.Count != 1 || QueryResult.Columns.Count != 1)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mt-2 mb-2">
+        KPI tek bir değer bekliyor
+    </MudAlert>
+}
+else
+{
+    var colMeta = QueryResult.Columns[0];
+    var rawValue = QueryResult.Rows[0].Count > 0 ? QueryResult.Rows[0][0] : null;
+    var formattedValue = FormatKpiValue(rawValue, colMeta.Format);
+
+    <MudCard Elevation="4" Class="pa-6 my-4 text-center rounded-lg" Style="border-left: 6px solid var(--brand-gold, #B89968); background: linear-gradient(135deg, rgba(26,43,71,0.02) 0%, rgba(184,153,104,0.05) 100%);">
+        <MudCardContent>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="mb-2 fw-bold text-uppercase" Style="letter-spacing: 1px;">
+                @colMeta.DisplayName
+            </MudText>
+            <MudText Typo="Typo.h3" Color="Color.Primary" Class="fw-bold my-2" Style="color: var(--brand-primary, #1A2B47);">
+                @formattedValue
+            </MudText>
+        </MudCardContent>
+    </MudCard>
+}
+
+@code {
+    [Parameter]
+    public ClientQueryResult? QueryResult { get; set; }
+
+    private string FormatKpiValue(object? rawValue, string? format)
+    {
+        if (rawValue == null) return "-";
+
+        if (rawValue is JsonElement jsonElement)
+        {
+            if (jsonElement.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+                return "-";
+
+            if (jsonElement.ValueKind == JsonValueKind.Number)
+            {
+                if (jsonElement.TryGetDecimal(out var decVal))
+                {
+                    return FormatNumeric(decVal, format);
+                }
+                if (jsonElement.TryGetDouble(out var dblVal))
+                {
+                    return FormatNumeric(dblVal, format);
+                }
+                return jsonElement.GetRawText();
+            }
+            if (jsonElement.ValueKind == JsonValueKind.String)
+            {
+                var strVal = jsonElement.GetString();
+                if (decimal.TryParse(strVal, NumberStyles.Any, CultureInfo.InvariantCulture, out var decVal))
+                {
+                    return FormatNumeric(decVal, format);
+                }
+                return strVal ?? "";
+            }
+            return jsonElement.ToString();
+        }
+
+        if (rawValue is decimal dec || rawValue is double || rawValue is float || rawValue is int || rawValue is long)
+        {
+            if (Convert.ToDecimal(rawValue, CultureInfo.InvariantCulture) is decimal decNum)
+            {
+                return FormatNumeric(decNum, format);
+            }
+        }
+
+        if (rawValue is string sVal && decimal.TryParse(sVal, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedDec))
+        {
+            return FormatNumeric(parsedDec, format);
+        }
+
+        return rawValue.ToString() ?? "";
+    }
+
+    private string FormatNumeric(decimal val, string? format)
+    {
+        var culture = new CultureInfo("tr-TR");
+        if (string.IsNullOrWhiteSpace(format))
+        {
+            return val.ToString(culture);
+        }
+        try
+        {
+            return val.ToString(format, culture);
+        }
+        catch
+        {
+            return val.ToString(culture);
+        }
+    }
+
+    private string FormatNumeric(double val, string? format)
+    {
+        var culture = new CultureInfo("tr-TR");
+        if (string.IsNullOrWhiteSpace(format))
+        {
+            return val.ToString(culture);
+        }
+        try
+        {
+            return val.ToString(format, culture);
+        }
+        catch
+        {
+            return val.ToString(culture);
+        }
+    }
+}

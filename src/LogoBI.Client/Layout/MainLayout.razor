@@ -1,5 +1,5 @@
-﻿@inherits LayoutComponentBase
-<MudThemeProvider />
+@inherits LayoutComponentBase
+<MudThemeProvider Theme="@_theme" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -9,12 +9,25 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        <div class="top-row px-4 d-flex align-center justify-end" style="background-color: var(--brand-primary, #1A2B47); color: white; min-height: 3.5rem;">
+            <MudText Typo="Typo.subtitle2" Style="color: var(--brand-gold, #B89968); font-weight: 600;">LogoBI Self-Service BI</MudText>
         </div>
 
-        <article class="content px-4">
+        <article class="content px-4 py-4">
             @Body
         </article>
     </main>
 </div>
+
+@code {
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#1A2B47",
+            Secondary = "#B89968",
+            AppbarBackground = "#1A2B47",
+            Background = "#F8F9FA"
+        }
+    };
+}
